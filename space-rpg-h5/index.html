@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星际探索者号 - 船载终端</title>
+    <link rel="stylesheet" href="css/terminal.css">
+    <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/wizard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部状态栏 -->
+        <div class="status-bar">
+            <div class="status-bar-left">
+                <span class="sector-info" id="sector-info">加载中...</span>
+                <span class="status-sep">|</span>
+                <span class="region-info" id="region-info">--</span>
+                <span class="status-sep">|</span>
+                <span class="location-info" id="location-info">--</span>
+            </div>
+            <div class="status-bar-center" id="game-time">--:--</div>
+            <div class="status-bar-right">
+                <div class="connection-status">
+                    <i class="fas fa-signal"></i> 深空网络
+                </div>
+                <button class="settings-btn-inline" id="settings-btn" title="终端设置">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 主终端界面 -->
+        <div class="terminal-container">
+            <!-- 左侧：终端输出区 -->
+            <div class="terminal-output" id="terminal-output">
+                <!-- 终端输出内容将通过JS动态生成 -->
+                <div class="terminal-line">
+                    <span class="prompt">&gt;</span> <span class="command">系统初始化...</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">&gt;</span> <span class="command">加载船载AI核心...</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">&gt;</span> <span class="command">连接深空网络...</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt success">&gt;</span> <span class="command">系统就绪。欢迎回来，舰长。</span>
+                </div>
+            </div>
+
+            <!-- 右侧：状态面板 -->
+            <div class="status-panel">
+                <!-- 飞船信息（顶部） -->
+                <div class="status-card">
+                    <h3><i class="fas fa-rocket"></i> 飞船信息</h3>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-ship"></i></span>
+                        <span class="status-value" id="ship-name-display">加载中...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-crosshairs"></i></span>
+                        <span class="status-value" id="ship-armament">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="status-value" id="ship-defense">--</span>
+                    </div>
+                </div>
+
+                <!-- 船体状态（合并船体、护盾、燃料） -->
+                <div class="status-card">
+                    <h3><i class="fas fa-shield-alt"></i> 船体状态</h3>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-shield-alt"></i></span>
+                        <span class="status-value" id="hull-label">░░░░░░ --%</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-bolt"></i></span>
+                        <span class="status-value" id="shield-label">░░░░░░ --%</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-gas-pump"></i></span>
+                        <span class="status-value" id="fuel-label">░░░░░░ --%</span>
+                    </div>
+                </div>
+
+                <!-- 舰长状态 -->
+                <div class="status-card">
+                    <h3><i class="fas fa-user-astronaut"></i> 舰长状态</h3>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-heart"></i></span>
+                        <span class="status-value" id="captain-health">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-battery-three-quarters"></i></span>
+                        <span class="status-value" id="captain-energy">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-coins"></i></span>
+                        <span class="status-value" id="credits">--€</span>
+                    </div>
+                </div>
+
+                <!-- 地区信息（独立面板） -->
+                <div class="status-card">
+                    <h3><i class="fas fa-globe-americas"></i> 地区信息</h3>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-map-pin"></i></span>
+                        <span class="status-value" id="location-display">加载中...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-shield"></i></span>
+                        <span class="status-value" id="security-level">--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-icon"><i class="fas fa-weight-hanging"></i></span>
+                        <span class="status-value" id="gravity">--</span>
+                    </div>
+                </div>
+
+                <!-- 近期任务 -->
+                <div class="status-card">
+                    <h3><i class="fas fa-tasks"></i> 近期任务</h3>
+                    <div class="recent-missions" id="recent-missions">
+                        <!-- 动态生成 -->
+                        <div class="mission-item">
+                            <i class="fas fa-spinner fa-pulse"></i> 加载中...
+                        </div>
+                    </div>
+                    <div class="mission-actions">
+                        <button class="mission-btn" onclick="UI.showMissionDetails()">
+                            <i class="fas fa-info-circle"></i> 详情
+                        </button>
+                        <button class="mission-btn" onclick="UI.switchMission()">
+                            <i class="fas fa-exchange-alt"></i> 切换
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 快速命令 -->
+                <div class="status-card">
+                    <h3><i class="fas fa-terminal"></i> 快速命令</h3>
+                    <div class="quick-commands">
+                        <button class="cmd-btn" onclick="Game.command('/status')">
+                            <i class="fas fa-chart-bar"></i> 状态
+                        </button>
+                        <button class="cmd-btn" onclick="Game.command('/inventory')">
+                            <i class="fas fa-box-open"></i> 物品
+                        </button>
+                        <button class="cmd-btn" onclick="Game.command('/rest')">
+                            <i class="fas fa-bed"></i> 休息
+                        </button>
+                        <button class="cmd-btn" onclick="Game.command('/missions')">
+                            <i class="fas fa-tasks"></i> 任务
+                        </button>
+                        <button class="cmd-btn" onclick="Game.command('/map')">
+                            <i class="fas fa-map"></i> 星图
+                        </button>
+                        <button class="cmd-btn" onclick="Game.command('/agents')">
+                            <i class="fas fa-users"></i> 代理人
+                        </button>
+                        <button class="cmd-btn" onclick="Game.command('/port')">
+                            <i class="fas fa-anchor"></i> 港口服务
+                        </button>
+                        <button class="cmd-btn" onclick="Game.command('/history')">
+                            <i class="fas fa-history"></i> 历史
+                        </button>
+                        <button class="cmd-btn" onclick="Game.command('/worldbuild')">
+                            <i class="fas fa-globe"></i> 世界观
+                        </button>
+                        <button class="cmd-btn" onclick="Game.command('/save')">
+                            <i class="fas fa-save"></i> 保存
+                        </button>
+                        <button class="cmd-btn" onclick="Game.command('/help')">
+                            <i class="fas fa-question-circle"></i> 帮助
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部输入区 -->
+        <div class="input-area">
+            <div class="input-prompt">
+                <span class="prompt-large">→</span>
+            </div>
+            <div class="input-container">
+                <input type="text" id="command-input" placeholder="输入行动描述或命令（如：/rest, /status）..." autocomplete="off">
+                <button id="send-btn" onclick="sendCommand()">
+                    <i class="fas fa-paper-plane"></i> 执行
+                </button>
+            </div>
+            <div class="input-hint">
+                提示：输入自然语言行动描述，或使用命令（/开头）
+            </div>
+        </div>
+
+        <!-- 幕间休息模态框 -->
+        <div id="rest-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-bed"></i> 幕间休息</h2>
+                    <span class="close" onclick="closeModal('rest-modal')">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="rest-conditions-check"></div>
+                    <div id="rest-options" style="display: none;">
+                        <h3>选择休息类型：</h3>
+                        <div class="rest-option" onclick="Game.performRest('full')">
+                            <h4><i class="fas fa-star"></i> 完整休息</h4>
+                            <p>满足所有条件，完整恢复状态</p>
+                            <small>消耗：1个能量块</small>
+                        </div>
+                        <div class="rest-option" onclick="Game.performRest('simple')">
+                            <h4><i class="fas fa-moon"></i> 简易休息</h4>
+                            <p>仅需不在战斗中，部分恢复</p>
+                            <small>无消耗，恢复效果减半</small>
+                        </div>
+                        <div class="rest-option emergency" onclick="Game.performRest('emergency')">
+                            <h4><i class="fas fa-exclamation-triangle"></i> 紧急休息</h4>
+                            <p>无条件，极少恢复+负面状态</p>
+                            <small>警告：可能导致状态下降</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript文件 -->
+    <script src="js/default-config.js"></script>
+    <script src="js/world-build-wizard.js"></script>
+    <script src="js/game-state.js"></script>
+    <script src="js/world-lore.js"></script>
+    <script src="js/tools.js"></script>
+    <script src="js/act-manager.js"></script>
+    <script src="js/validator.js"></script>
+    <script src="js/api-manager.js"></script>
+    <script src="js/settings-manager.js"></script>
+    <script src="js/game-core.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

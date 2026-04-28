@@ -1,0 +1,681 @@
+/* 终端风格基础样式 */
+:root {
+    --terminal-bg: #0a0a0a;
+    --terminal-text: #00ff00;
+    --terminal-border: #00aa00;
+    --panel-bg: #1a1a1a;
+    --panel-border: #333;
+    --accent-color: #00ccff;
+    --warning-color: #ff9900;
+    --danger-color: #ff3333;
+    --success-color: #33cc33;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #001122 0%, #003344 100%);
+    color: var(--terminal-text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 状态栏 */
+.status-bar {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 20, 30, 0.9);
+    border: 1px solid var(--terminal-border);
+    border-radius: 8px 8px 0 0;
+    padding: 10px 20px;
+    margin-bottom: 2px;
+    backdrop-filter: blur(10px);
+    gap: 15px;
+}
+
+/* 左区：飞船名 + 当前地点 */
+.status-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+}
+
+.ship-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--accent-color);
+    text-shadow: 0 0 10px rgba(0, 204, 255, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.status-sep {
+    color: #444;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.context-info {
+    font-size: 0.9rem;
+    color: #cccccc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 中区：游戏时间 */
+.status-bar-center {
+    font-size: 0.95rem;
+    color: #88ff88;
+    white-space: nowrap;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+/* 右区：网络状态 + 设置按钮 */
+.status-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.connection-status {
+    color: var(--success-color);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.connection-status i {
+    margin-right: 4px;
+}
+
+.connection-status.no-signal {
+    color: #555;
+}
+
+.connection-status.no-signal i {
+    color: #ff4444;
+}
+
+/* 内联设置齿轮按钮 */
+.settings-btn-inline {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #888;
+    border: 1px solid #444;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+}
+
+.settings-btn-inline:hover {
+    background: rgba(0, 204, 255, 0.15);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: rotate(45deg);
+}
+
+/* 终端容器 */
+.terminal-container {
+    display: flex;
+    gap: 20px;
+    height: calc(100vh - 300px);
+    min-height: 500px;
+}
+
+/* 终端输出区 */
+.terminal-output {
+    flex: 3;
+    background: var(--terminal-bg);
+    border: 1px solid var(--terminal-border);
+    border-radius: 0 0 0 8px;
+    padding: 20px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    font-family: 'Consolas', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1);
+    height: 100%;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.terminal-line {
+    margin-bottom: 10px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.prompt {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.prompt.success {
+    color: var(--success-color);
+}
+
+.command {
+    color: #ffffff;
+}
+
+/* 状态面板 */
+.status-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 300px;
+    height: calc(100vh - 300px);
+    min-height: 500px;
+    overflow-y: auto;
+}
+
+.status-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.status-card h3 {
+    color: var(--accent-color);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--panel-border);
+    padding-bottom: 8px;
+}
+
+.status-card h3 i {
+    margin-right: 8px;
+}
+
+/* 进度条 */
+.progress-bar {
+    position: relative;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #33cc33, #00ff00);
+    border-radius: 12px;
+    transition: width 0.5s ease;
+}
+
+.progress-fill.shield {
+    background: linear-gradient(90deg, #0066cc, #00aaff);
+}
+
+.progress-fill.fuel {
+    background: linear-gradient(90deg, #cc9900, #ffcc00);
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 0 3px black;
+}
+
+/* ASCII进度条容器 */
+.ascii-progress-container {
+    margin: 12px 0;
+}
+
+.ascii-progress-label {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    color: var(--terminal-text, #00ff00);
+    text-align: center;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+}
+
+.ascii-progress-desc {
+    font-size: 0.8rem;
+    color: #888888;
+    text-align: center;
+    font-style: italic;
+}
+
+.status-label {
+    font-size: 0.9rem;
+    color: #cccccc;
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* 状态项 */
+.status-item {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.status-icon {
+    width: 30px;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+}
+
+.status-value {
+    flex: 1;
+    font-size: 1rem;
+}
+
+/* 任务项 */
+.mission-item {
+    background: rgba(0, 40, 60, 0.5);
+    border: 1px solid rgba(0, 170, 255, 0.3);
+    border-radius: 6px;
+    padding: 10px;
+    margin: 5px 0;
+    transition: all 0.3s ease;
+}
+
+.mission-item:hover {
+    background: rgba(0, 60, 90, 0.7);
+    border-color: var(--accent-color);
+}
+
+.mission-item i {
+    margin-right: 8px;
+    color: var(--accent-color);
+}
+
+/* 近期任务容器 */
+.recent-missions {
+    max-height: 180px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+/* 任务状态标签 */
+.mission-status {
+    float: right;
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: rgba(0, 100, 0, 0.3);
+    color: #00ff00;
+}
+
+.mission-status[data-status="进行中"] {
+    background: rgba(0, 100, 200, 0.3);
+    color: #00ccff;
+}
+
+.mission-status[data-status="未接受"] {
+    background: rgba(100, 100, 100, 0.3);
+    color: #aaaaaa;
+}
+
+.mission-status[data-status="已完成"] {
+    background: rgba(0, 150, 0, 0.3);
+    color: #00ff00;
+}
+
+.mission-status[data-status="失败"] {
+    background: rgba(150, 0, 0, 0.3);
+    color: #ff3333;
+}
+
+/* 活跃任务 */
+.mission-item.active {
+    border-color: var(--accent-color);
+    background: rgba(0, 60, 100, 0.7);
+    box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+}
+
+/* 任务操作按钮 */
+.mission-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.mission-btn {
+    flex: 1;
+    background: rgba(0, 40, 60, 0.7);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    color: var(--terminal-text);
+    padding: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mission-btn:hover {
+    background: rgba(0, 60, 90, 0.9);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+.mission-btn i {
+    margin-right: 5px;
+}
+
+/* 快速命令 */
+.quick-commands {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.cmd-btn {
+    background: rgba(0, 40, 60, 0.7);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    color: var(--terminal-text);
+    padding: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.cmd-btn:hover {
+    background: rgba(0, 80, 120, 0.9);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.cmd-btn:active {
+    transform: translateY(0);
+}
+
+/* 输入区域 */
+.input-area {
+    margin-top: 20px;
+    background: rgba(0, 20, 30, 0.9);
+    border: 1px solid var(--terminal-border);
+    border-radius: 8px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.input-prompt {
+    margin-bottom: 15px;
+}
+
+.prompt-large {
+    font-size: 2rem;
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.input-container {
+    display: flex;
+    gap: 10px;
+}
+
+#command-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    color: var(--terminal-text);
+    padding: 12px 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    outline: none;
+}
+
+#command-input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(0, 204, 255, 0.3);
+}
+
+#send-btn {
+    background: linear-gradient(135deg, #0066cc, #00aaff);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    padding: 12px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#send-btn:hover {
+    background: linear-gradient(135deg, #0088ff, #00ccff);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 136, 255, 0.4);
+}
+
+#send-btn:active {
+    transform: translateY(0);
+}
+
+.input-hint {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #88ff88;
+    text-align: center;
+}
+
+/* 模态框 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--panel-bg);
+    border: 2px solid var(--accent-color);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 0 30px rgba(0, 204, 255, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--panel-border);
+}
+
+.modal-header h2 {
+    color: var(--accent-color);
+    font-size: 1.5rem;
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close:hover {
+    color: white;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+/* 休息选项 */
+.rest-option {
+    background: rgba(0, 40, 60, 0.5);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.rest-option:hover {
+    background: rgba(0, 60, 90, 0.7);
+    border-color: var(--accent-color);
+    transform: translateX(5px);
+}
+
+.rest-option h4 {
+    color: var(--accent-color);
+    margin-bottom: 5px;
+}
+
+.rest-option p {
+    color: #cccccc;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.rest-option small {
+    color: #888888;
+    font-size: 0.8rem;
+}
+
+.rest-option.emergency {
+    border-color: var(--warning-color);
+}
+
+.rest-option.emergency h4 {
+    color: var(--warning-color);
+}
+
+/* 动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+    .terminal-container {
+        flex-direction: column;
+    }
+    
+    .status-panel {
+        min-width: 100%;
+    }
+    
+    .quick-commands {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .status-bar {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px 12px;
+    }
+    
+    .status-bar-left {
+        order: 1;
+        flex: 1 1 100%;
+    }
+
+    .status-bar-center {
+        order: 2;
+        flex: 1;
+        font-size: 0.85rem;
+    }
+
+    .status-bar-right {
+        order: 3;
+    }
+    
+    .quick-commands {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .terminal-output {
+        font-size: 12px;
+        padding: 15px;
+    }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--terminal-border);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
+}

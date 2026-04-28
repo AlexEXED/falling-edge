@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>太空RPG API功能测试</title>
+    <link rel="stylesheet" href="css/terminal.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 独立页面布局适配 */
+        body {
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .page-container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 170, 0, 0.3);
+        }
+
+        .page-header h1 {
+            color: var(--accent-color, #00ccff);
+            font-size: 1.5rem;
+            margin: 0 0 8px 0;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(0, 204, 255, 0.4);
+        }
+
+        .page-header h1 i {
+            margin-right: 10px;
+            opacity: 0.7;
+        }
+
+        .page-header p {
+            color: #88ff88;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .page-panel {
+            background: linear-gradient(180deg, rgba(0, 15, 25, 0.97) 0%, rgba(0, 10, 18, 0.99) 100%);
+            border: 1px solid var(--terminal-border, #00aa00);
+            border-radius: 12px;
+            box-shadow:
+                0 0 30px rgba(0, 170, 0, 0.15),
+                0 0 60px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(0, 204, 255, 0.08);
+            overflow: hidden;
+        }
+
+        .panel-content {
+            padding: 20px 24px;
+            max-height: none;
+        }
+
+        /* 测试卡片网格 */
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
+            margin-top: 12px;
+        }
+
+        .test-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 170, 0, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.25s ease;
+        }
+
+        .test-card:hover {
+            border-color: var(--accent-color, #00ccff);
+            background: rgba(0, 20, 40, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .test-card h3 {
+            color: var(--accent-color, #00ccff);
+            font-size: 0.95rem;
+            margin: 0 0 6px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .test-card p {
+            color: #888;
+            font-size: 0.8rem;
+            margin: 0 0 12px 0;
+        }
+
+        /* 测试结果 */
+        .test-result {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 170, 0, 0.15);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            color: #cccccc;
+            line-height: 1.5;
+        }
+
+        /* 状态指示器 */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.ok {
+            background: var(--success-color, #33cc33);
+            box-shadow: 0 0 6px rgba(51, 204, 51, 0.5);
+        }
+
+        .status-indicator.warning {
+            background: var(--warning-color, #ff9900);
+            box-shadow: 0 0 6px rgba(255, 153, 0, 0.5);
+        }
+
+        .status-indicator.error {
+            background: var(--danger-color, #ff3333);
+            box-shadow: 0 0 6px rgba(255, 51, 51, 0.5);
+        }
+
+        /* API 配置区域 */
+        .api-config-section {
+            background: rgba(0, 20, 40, 0.3);
+            border: 1px solid rgba(0, 170, 0, 0.2);
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 24px;
+        }
+
+        /* 日志输出 */
+        .log-output {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 170, 0, 0.2);
+            border-radius: 8px;
+            padding: 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+            height: 180px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(0, 170, 0, 0.08);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: #555;
+            margin-right: 10px;
+        }
+
+        .log-info {
+            color: var(--accent-color, #00ccff);
+        }
+
+        .log-warning {
+            color: var(--warning-color, #ff9900);
+        }
+
+        .log-error {
+            color: var(--danger-color, #ff3333);
+        }
+
+        .log-success {
+            color: var(--success-color, #33cc33);
+            font-weight: bold;
+        }
+
+        /* 底部返回 */
+        .panel-footer {
+            padding: 14px 24px;
+            background: rgba(0, 15, 25, 0.9);
+            border-top: 1px solid rgba(0, 170, 0, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* 全流程操作栏 */
+        .full-test-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px 10px;
+            }
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1><i class="fas fa-flask"></i> API 功能测试</h1>
+            <p>测试 AI 服务接口与游戏集成功能</p>
+        </div>
+
+        <div class="page-panel">
+            <div class="panel-content">
+                <!-- API 配置 -->
+                <div class="api-config-section">
+                    <div class="settings-group" style="margin-bottom:14px;">
+                        <h3><i class="fas fa-server"></i> API 配置</h3>
+                        <div class="settings-item">
+                            <label>服务提供商</label>
+                            <select id="provider-select">
+                                <option value="deepseek">DeepSeek</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="claude">Claude</option>
+                                <option value="qwen">Qwen</option>
+                                <option value="glm">GLM</option>
+                                <option value="custom">自定义</option>
+                            </select>
+                        </div>
+                        <div class="settings-item">
+                            <label>API 密钥</label>
+                            <input type="password" id="api-key-input" placeholder="输入 API 密钥">
+                        </div>
+                        <div class="settings-item">
+                            <label>模型</label>
+                            <select id="model-select">
+                                <option value="">选择模型</option>
+                            </select>
+                        </div>
+                        <div class="settings-item" id="custom-url-container" style="display:none;">
+                            <label>自定义 API 地址</label>
+                            <input type="text" id="custom-url" placeholder="仅自定义提供商需要输入">
+                        </div>
+                        <div class="settings-actions" style="margin-top:12px;">
+                            <button class="settings-btn primary" onclick="saveConfig()">
+                                <i class="fas fa-save"></i> 保存配置
+                            </button>
+                            <button class="settings-btn" onclick="testConnection()">
+                                <i class="fas fa-plug"></i> 测试连接
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 基础功能测试 -->
+                <div class="settings-group">
+                    <h3><i class="fas fa-microchip"></i> 基础功能测试</h3>
+                    <div class="test-grid">
+                        <div class="test-card">
+                            <h3><i class="fas fa-power-off" style="margin-right:6px;opacity:0.6;"></i>API 管理器初始化</h3>
+                            <p>测试 API 管理器是否正确加载</p>
+                            <button class="settings-btn" onclick="testInit()">测试初始化</button>
+                            <div id="result-init" class="test-result"></div>
+                        </div>
+                        <div class="test-card">
+                            <h3><i class="fas fa-database" style="margin-right:6px;opacity:0.6;"></i>配置保存/加载</h3>
+                            <p>测试配置持久化功能</p>
+                            <button class="settings-btn" onclick="testConfig()">测试配置</button>
+                            <div id="result-config" class="test-result"></div>
+                        </div>
+                        <div class="test-card">
+                            <h3><i class="fas fa-list" style="margin-right:6px;opacity:0.6;"></i>模型列表获取</h3>
+                            <p>测试获取可用模型列表</p>
+                            <button class="settings-btn" onclick="testModels()">测试模型</button>
+                            <div id="result-models" class="test-result"></div>
+                        </div>
+                        <div class="test-card">
+                            <h3><i class="fas fa-exchange-alt" style="margin-right:6px;opacity:0.6;"></i>提供商切换</h3>
+                            <p>测试切换不同 AI 提供商</p>
+                            <button class="settings-btn" onclick="testProviders()">测试提供商</button>
+                            <div id="result-providers" class="test-result"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API 连接测试 -->
+                <div class="settings-group">
+                    <h3><i class="fas fa-network-wired"></i> API 连接测试</h3>
+                    <div class="test-grid">
+                        <div class="test-card">
+                            <h3><i class="fas fa-comment" style="margin-right:6px;opacity:0.6;"></i>简单对话测试</h3>
+                            <p>发送简单的测试消息</p>
+                            <button class="settings-btn" onclick="testSimpleChat()">测试对话</button>
+                            <div id="result-chat" class="test-result"></div>
+                        </div>
+                        <div class="test-card">
+                            <h3><i class="fas fa-brain" style="margin-right:6px;opacity:0.6;"></i>游戏行动分析</h3>
+                            <p>分析游戏行动并建议工具</p>
+                            <button class="settings-btn" onclick="testActionAnalysis()">测试分析</button>
+                            <div id="result-analysis" class="test-result"></div>
+                        </div>
+                        <div class="test-card">
+                            <h3><i class="fas fa-bug" style="margin-right:6px;opacity:0.6;"></i>错误处理测试</h3>
+                            <p>测试 API 错误处理机制</p>
+                            <button class="settings-btn" onclick="testErrorHandling()">测试错误</button>
+                            <div id="result-error" class="test-result"></div>
+                        </div>
+                        <div class="test-card">
+                            <h3><i class="fas fa-redo" style="margin-right:6px;opacity:0.6;"></i>重试机制测试</h3>
+                            <p>测试请求重试功能</p>
+                            <button class="settings-btn" onclick="testRetry()">测试重试</button>
+                            <div id="result-retry" class="test-result"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 游戏集成测试 -->
+                <div class="settings-group">
+                    <h3><i class="fas fa-gamepad"></i> 游戏集成测试</h3>
+                    <div class="test-grid">
+                        <div class="test-card">
+                            <h3><i class="fas fa-tools" style="margin-right:6px;opacity:0.6;"></i>工具建议生成</h3>
+                            <p>为游戏行动生成工具建议</p>
+                            <button class="settings-btn" onclick="testToolSuggestions()">测试工具建议</button>
+                            <div id="result-tools" class="test-result"></div>
+                        </div>
+                        <div class="test-card">
+                            <h3><i class="fas fa-book" style="margin-right:6px;opacity:0.6;"></i>叙事响应生成</h3>
+                            <p>生成游戏叙事响应</p>
+                            <button class="settings-btn" onclick="testNarrative()">测试叙事</button>
+                            <div id="result-narrative" class="test-result"></div>
+                        </div>
+                        <div class="test-card">
+                            <h3><i class="fas fa-history" style="margin-right:6px;opacity:0.6;"></i>会话历史管理</h3>
+                            <p>测试会话历史功能</p>
+                            <button class="settings-btn" onclick="testHistory()">测试历史</button>
+                            <div id="result-history" class="test-result"></div>
+                        </div>
+                        <div class="test-card">
+                            <h3><i class="fas fa-chart-bar" style="margin-right:6px;opacity:0.6;"></i>统计信息</h3>
+                            <p>查看 API 使用统计</p>
+                            <button class="settings-btn" onclick="testStats()">测试统计</button>
+                            <div id="result-stats" class="test-result"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 完整流程测试 -->
+                <div class="settings-group">
+                    <h3><i class="fas fa-play-circle"></i> 完整流程测试</h3>
+                    <div class="full-test-actions">
+                        <button class="settings-btn primary" onclick="runAllTests()">
+                            <i class="fas fa-play"></i> 运行所有测试
+                        </button>
+                        <button class="settings-btn" onclick="clearResults()">
+                            <i class="fas fa-eraser"></i> 清空结果
+                        </button>
+                        <button class="settings-btn danger" onclick="resetAll()">
+                            <i class="fas fa-trash"></i> 重置所有
+                        </button>
+                    </div>
+                    <div id="full-test-result" class="test-result" style="margin-top:14px;"></div>
+                </div>
+
+                <!-- 日志输出 -->
+                <div class="log-output" id="log-output">
+                    <div class="log-entry"><span class="log-time">[00:00:00]</span> <span class="log-info">系统初始化完成</span></div>
+                </div>
+            </div>
+
+            <!-- 底部栏 -->
+            <div class="panel-footer">
+                <span style="font-size:0.8rem;color:#555;font-family:'Courier New',monospace;">
+                    <i class="fas fa-terminal" style="margin-right:4px;"></i> API Test Console
+                </span>
+                <a href="index.html" class="settings-btn" style="text-decoration:none;font-size:0.8rem;">
+                    <i class="fas fa-arrow-left"></i> 返回游戏
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api-manager.js?v=1.0.1"></script>
+    <script>
+        // 调试：检查APIManager是否加载
+        console.log('调试: 检查APIManager加载状态');
+        console.log('APIManager对象:', window.APIManager);
+        console.log('APIManager类型:', typeof window.APIManager);
+        if (window.APIManager) {
+            console.log('APIManager方法:', Object.keys(window.APIManager));
+        }
+
+        let logEntries = [];
+
+        // 日志函数
+        function log(message, type = 'info') {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const logDiv = document.getElementById('log-output');
+
+            const entry = {
+                time: timeStr,
+                message: message,
+                type: type
+            };
+
+            logEntries.push(entry);
+
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `<span class="log-time">[${timeStr}]</span> <span class="log-${type}">${message}</span>`;
+
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+
+            if (logEntries.length > 50) {
+                logEntries.shift();
+                if (logDiv.children.length > 50) {
+                    logDiv.removeChild(logDiv.firstChild);
+                }
+            }
+        }
+
+        // 显示测试结果
+        function showResult(elementId, message, success = true) {
+            const element = document.getElementById(elementId);
+            const statusClass = success ? 'ok' : 'error';
+            const statusText = success ? '✓' : '✗';
+
+            element.innerHTML = `<span class="status-indicator ${statusClass}"></span>${statusText} ${message}`;
+            element.style.borderColor = success ? 'rgba(51,204,51,0.3)' : 'rgba(255,51,51,0.3)';
+        }
+
+        // 保存配置
+        function saveConfig() {
+            try {
+                const provider = document.getElementById('provider-select').value;
+                const apiKey = document.getElementById('api-key-input').value;
+                const model = document.getElementById('model-select').value;
+
+                const config = {
+                    currentProvider: provider,
+                    apiKey: apiKey,
+                    currentModel: model,
+                    enabled: true
+                };
+
+                if (provider === 'custom') {
+                    const customURL = document.getElementById('custom-url').value;
+                    if (customURL.trim()) {
+                        config.customBaseURL = customURL.trim();
+                    }
+                }
+
+                APIManager.updateConfig(config);
+                log('配置已保存', 'success');
+                showResult('result-config', '配置保存成功', true);
+            } catch (error) {
+                log(`保存配置失败: ${error.message}`, 'error');
+                showResult('result-config', `配置保存失败: ${error.message}`, false);
+            }
+        }
+
+        // 测试连接
+        async function testConnection() {
+            try {
+                log('开始测试API连接...', 'info');
+                const result = await APIManager.testConnection();
+
+                if (result.success) {
+                    log(`连接成功: ${result.message}`, 'success');
+                    showResult('result-chat', result.message, true);
+                } else {
+                    log(`连接失败: ${result.message}`, 'error');
+                    showResult('result-chat', result.message, false);
+                }
+            } catch (error) {
+                log(`连接测试异常: ${error.message}`, 'error');
+                showResult('result-chat', `测试异常: ${error.message}`, false);
+            }
+        }
+
+        // 测试初始化
+        function testInit() {
+            try {
+                const config = APIManager.getConfig();
+                log(`API管理器初始化完成，当前提供商: ${config.currentProvider}`, 'success');
+                showResult('result-init', `初始化成功，提供商: ${config.currentProvider}，模型: ${config.currentModel}`, true);
+            } catch (error) {
+                log(`初始化测试失败: ${error.message}`, 'error');
+                showResult('result-init', `初始化失败: ${error.message}`, false);
+            }
+        }
+
+        // 测试模型列表
+        function testModels() {
+            try {
+                const providers = APIManager.getProviders();
+                let resultText = '可用提供商:\n';
+
+                providers.forEach(provider => {
+                    const models = APIManager.getAvailableModels(provider);
+                    resultText += `\n${provider}: ${models.length}个模型`;
+                    if (models.length > 0) {
+                        resultText += ` (${models.slice(0, 3).join(', ')}${models.length > 3 ? '...' : ''})`;
+                    }
+                });
+
+                log('模型列表获取成功', 'success');
+                showResult('result-models', '模型列表获取成功', true);
+                document.getElementById('result-models').innerHTML += '\n' + resultText;
+            } catch (error) {
+                log(`模型列表测试失败: ${error.message}`, 'error');
+                showResult('result-models', `模型列表失败: ${error.message}`, false);
+            }
+        }
+
+        // 测试提供商
+        function testProviders() {
+            try {
+                const providers = APIManager.getProviders();
+                log(`获取到 ${providers.length} 个提供商`, 'success');
+                showResult('result-providers', `获取到 ${providers.length} 个提供商: ${providers.join(', ')}`, true);
+            } catch (error) {
+                log(`提供商测试失败: ${error.message}`, 'error');
+                showResult('result-providers', `提供商测试失败: ${error.message}`, false);
+            }
+        }
+
+        // 测试简单对话
+        async function testSimpleChat() {
+            try {
+                log('发送测试消息...', 'info');
+                const result = await APIManager.sendRequest('你好，请回复"测试成功"');
+
+                if (result.success) {
+                    log(`对话成功: ${result.result.substring(0, 50)}...`, 'success');
+                    showResult('result-chat', '对话测试成功', true);
+                    document.getElementById('result-chat').innerHTML += `\n\n响应: ${result.result}`;
+                } else {
+                    log(`对话失败: ${result.message}`, 'error');
+                    showResult('result-chat', `对话失败: ${result.message}`, false);
+                }
+            } catch (error) {
+                log(`对话测试异常: ${error.message}`, 'error');
+                showResult('result-chat', `对话异常: ${error.message}`, false);
+            }
+        }
+
+        // 测试行动分析
+        async function testActionAnalysis() {
+            try {
+                const gameState = {
+                    location: '火星殖民地',
+                    status: '正常',
+                    resources: {
+                        credits: 1000,
+                        fuel: 75,
+                        energy: 50
+                    }
+                };
+
+                log('分析游戏行动...', 'info');
+                const result = await APIManager.analyzeActionForTools('攻击遇到的海盗', gameState);
+
+                if (result.success) {
+                    log(`分析成功，建议工具: ${result.suggestedTools.join(', ')}`, 'success');
+                    showResult('result-analysis', '行动分析成功', true);
+                    document.getElementById('result-analysis').innerHTML +=
+                        `\n\n建议工具: ${result.suggestedTools.join(', ')}\n` +
+                        `理由: ${result.reasoning}\n` +
+                        `优先级: ${result.priority}`;
+                } else {
+                    log(`分析失败: ${result.message}`, 'error');
+                    showResult('result-analysis', `分析失败: ${result.message}`, false);
+                }
+            } catch (error) {
+                log(`分析测试异常: ${error.message}`, 'error');
+                showResult('result-analysis', `分析异常: ${error.message}`, false);
+            }
+        }
+
+        // 测试错误处理
+        async function testErrorHandling() {
+            try {
+                const originalConfig = APIManager.getConfig();
+
+                APIManager.updateConfig({
+                    apiKey: 'invalid-key-123456'
+                });
+
+                log('使用错误密钥测试...', 'warning');
+                const result = await APIManager.sendRequest('测试错误处理');
+
+                if (result.fallback) {
+                    log(`错误处理成功触发了回退机制`, 'success');
+                    showResult('result-error', '错误处理测试成功（触发了回退）', true);
+                } else {
+                    log(`错误处理测试结果: ${result.success ? '成功' : '失败'}`, result.success ? 'success' : 'error');
+                    showResult('result-error', `错误处理测试: ${result.success ? '意外成功' : '失败'}`, result.success);
+                }
+
+                APIManager.updateConfig(originalConfig);
+
+            } catch (error) {
+                log(`错误处理测试异常: ${error.message}`, 'error');
+                showResult('result-error', `错误处理异常: ${error.message}`, false);
+            }
+        }
+
+        // 测试工具建议
+        async function testToolSuggestions() {
+            try {
+                const gameState = {
+                    location: '空间站',
+                    status: '正常',
+                    resources: {
+                        credits: 500,
+                        fuel: 60,
+                        energy: 80
+                    }
+                };
+
+                const testActions = [
+                    '攻击海盗飞船',
+                    '购买燃料补给',
+                    '尝试修理引擎',
+                    '前往月球基地'
+                ];
+
+                let results = [];
+
+                for (const action of testActions) {
+                    const result = await APIManager.analyzeActionForTools(action, gameState);
+                    results.push({
+                        action: action,
+                        success: result.success,
+                        tools: result.suggestedTools,
+                        reasoning: result.reasoning
+                    });
+                }
+
+                log(`工具建议测试完成，${results.filter(r => r.success).length}/${results.length} 成功`, 'success');
+                showResult('result-tools', '工具建议测试完成', true);
+
+                let resultText = '\n测试结果:\n';
+                results.forEach(r => {
+                    resultText += `\n"${r.action}": ${r.success ? '✓' : '✗'}`;
+                    if (r.success) {
+                        resultText += ` 工具: ${r.tools.join(', ')}`;
+                    }
+                });
+
+                document.getElementById('result-tools').innerHTML += resultText;
+
+            } catch (error) {
+                log(`工具建议测试异常: ${error.message}`, 'error');
+                showResult('result-tools', `工具建议异常: ${error.message}`, false);
+            }
+        }
+
+        // 运行所有测试
+        async function runAllTests() {
+            const tests = [
+                testInit,
+                testConfig,
+                testModels,
+                testProviders,
+                testSimpleChat,
+                testActionAnalysis,
+                testToolSuggestions
+            ];
+
+            const fullResult = document.getElementById('full-test-result');
+            fullResult.innerHTML = '开始运行所有测试...\n\n';
+
+            let passed = 0;
+            let failed = 0;
+
+            for (let i = 0; i < tests.length; i++) {
+                const testName = tests[i].name;
+                fullResult.innerHTML += `运行测试: ${testName}... `;
+
+                try {
+                    await tests[i]();
+                    fullResult.innerHTML += '✓\n';
+                    passed++;
+                } catch (error) {
+                    fullResult.innerHTML += `✗ (${error.message})\n`;
+                    failed++;
+                }
+            }
+
+            fullResult.innerHTML += `\n测试完成: ${passed} 通过, ${failed} 失败`;
+            fullResult.style.borderColor = failed === 0 ? 'rgba(51,204,51,0.3)' : 'rgba(255,51,51,0.3)';
+
+            log(`所有测试完成: ${passed} 通过, ${failed} 失败`, failed === 0 ? 'success' : 'error');
+        }
+
+        // 清空结果
+        function clearResults() {
+            document.querySelectorAll('.test-result').forEach(el => {
+                el.innerHTML = '';
+                el.style.borderColor = '';
+            });
+            log('所有测试结果已清空', 'info');
+        }
+
+        // 重置所有
+        function resetAll() {
+            APIManager.resetStats();
+            localStorage.removeItem('spaceRPG_APIConfig');
+            window.location.reload();
+        }
+
+        // 切换自定义地址输入框的显示
+        function toggleCustomURL(provider) {
+            const urlContainer = document.getElementById('custom-url-container');
+            const urlInput = document.getElementById('custom-url');
+
+            if (provider === 'custom') {
+                urlContainer.style.display = 'flex';
+                urlInput.placeholder = '输入自定义API地址 (如: https://api.example.com/v1)';
+                urlInput.required = true;
+            } else {
+                urlContainer.style.display = 'none';
+                urlInput.value = '';
+                urlInput.required = false;
+            }
+        }
+
+        // 页面加载时初始化
+        window.onload = function() {
+            log('API测试页面已加载', 'info');
+
+            const config = APIManager.getConfig();
+            document.getElementById('provider-select').value = config.currentProvider;
+            document.getElementById('api-key-input').value = config.apiKey;
+            document.getElementById('model-select').value = config.currentModel;
+
+            if (config.currentProvider === 'custom' && config.customBaseURL) {
+                document.getElementById('custom-url').value = config.customBaseURL;
+            } else {
+                document.getElementById('custom-url').value = '';
+            }
+
+            updateModelList();
+            toggleCustomURL(config.currentProvider);
+        };
+
+        // 更新模型列表
+        function updateModelList() {
+            const provider = document.getElementById('provider-select').value;
+            const models = APIManager.getAvailableModels(provider);
+            const modelSelect = document.getElementById('model-select');
+
+            modelSelect.innerHTML = '<option value="">选择模型</option>';
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                modelSelect.appendChild(option);
+            });
+
+            const config = APIManager.getConfig();
+            if (config.currentModel && models.includes(config.currentModel)) {
+                modelSelect.value = config.currentModel;
+            }
+        }
+
+        // 提供商切换时更新模型列表和自定义地址输入框
+        document.getElementById('provider-select').addEventListener('change', function() {
+            updateModelList();
+            toggleCustomURL(this.value);
+        });
+    </script>
+</body>
+</html>
